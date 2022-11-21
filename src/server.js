@@ -7,8 +7,8 @@ BigInt.prototype.toJSON = function () {
 
 const init = async () => {
   const server = Hapi.server({
-    port: 3000,
-    host: 'localhost',
+    port: process.env.PORT || 5000,
+    host: process.env.HOST || '0.0.0.0',
     routes: {
       cors: {
         origin: ['*'],
