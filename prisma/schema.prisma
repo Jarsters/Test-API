@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model KomentarForum {
+  id          Int      @id @default(autoincrement())
+  content     String   @db.Text
+  authorId    Int
+  forumId     Int
+  thumbs_up   Int      @default(0)
+  thumbs_down Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  user        user     @relation("komentar_forumTouser", fields: [authorId], references: [id], onDelete: Cascade)
+  forum       forum    @relation("forumTokomentar_forum", fields: [forumId], references: [id], onDelete: Cascade)
+
+  @@index([authorId], map: "komentar_forum_authorId_fkey")
+  @@index([forumId], map: "komentar_forum_forumId_fkey")
+  @@map("komentar_forum")
+}
+
+model KomentarPost {
+  id          Int      @id @default(autoincrement())
+  content     String   @db.Text
+  authorId    Int
+  postId      Int
+  thumbs_up   Int      @default(0)
+  thumbs_down Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  user        user     @relation("komentar_postTouser", fields: [authorId], references: [id], onDelete: Cascade)
+  post        post     @relation("komentar_postTopost", fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([authorId], map: "komentar_post_authorId_fkey")
+  @@index([postId], map: "komentar_post_postId_fkey")
+  @@map("komentar_post")
+}
+
+model KategoriPost {
+  postId     Int
+  kategoriId Int
+  kategori   kategori @relation("kategoriTokategori_post", fields: [kategoriId], references: [id], onDelete: Cascade)
+  post       post     @relation("kategori_postTopost", fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, kategoriId])
+  @@index([kategoriId], map: "kategori_post_kategoriId_fkey")
+  @@map("kategori_post")
+}
+
+model KategoriForum {
+  forumId    Int
+  kategoriId Int
+  forum      forum    @relation("forumTokategori_forum", fields: [forumId], references: [id], onDelete: Cascade)
+  kategori   kategori @relation("kategoriTokategori_forum", fields: [kategoriId], references: [id], onDelete: Cascade)
+
+  @@id([forumId, kategoriId])
+  @@index([kategoriId], map: "kategori_forum_kategoriId_fkey")
+  @@map("kategori_forum")
+}
+
+model forum {
+  id             Int             @id @default(autoincrement())
+  title          String          @db.VarChar(100)
+  image_large    String          @default("forum/default-large.jpg") @db.VarChar(100)
+  image_small    String          @default("forum/default-small.jpg") @db.VarChar(100)
+  authorId       Int
+  thumbs_up      Int             @default(0)
+  thumbs_down    Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now())
+  user           user            @relation(fields: [authorId], references: [id], map: "Forum_authorId_fkey", onDelete: Cascade)
+  kategori_forum KategoriForum[] @relation("forumTokategori_forum")
+  komentar_forum KomentarForum[] @relation("forumTokomentar_forum")
+
+  @@index([authorId], map: "Forum_authorId_fkey")
+}
+
+model kategori {
+  id             Int             @id @default(autoincrement())
+  title          String          @db.VarChar(50)
+  authorId       Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now())
+  updatedBy      String          @db.VarChar(50)
+  user           user            @relation(fields: [authorId], references: [id], map: "Kategori_authorId_fkey", onDelete: NoAction)
+  kategori_forum KategoriForum[] @relation("kategoriTokategori_forum")
+  kategori_post  KategoriPost[]  @relation("kategoriTokategori_post")
+
+  @@index([authorId], map: "Kategori_authorId_fkey")
+}
+
+model log {
+  id       Int    @id @default(autoincrement())
+  action   String @db.VarChar(100)
+  status   Int
+  authorId Int
+  user     user   @relation(fields: [authorId], references: [id], map: "Log_authorId_fkey", onDelete: NoAction)
+
+  @@index([authorId], map: "Log_authorId_fkey")
+}
+
+model post {
+  id            Int            @id @default(autoincrement())
+  title         String         @db.VarChar(100)
+  content       String         @db.Text
+  image_large   String         @default("post/default-large.jpg") @db.VarChar(100)
+  image_small   String         @default("post/default-small.jpg") @db.VarChar(100)
+  authorId      Int
+  thumbs_up     Int            @default(0)
+  thumbs_down   Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now())
+  user          user           @relation(fields: [authorId], references: [id], map: "Post_authorId_fkey", onDelete: Cascade)
+  kategori_post KategoriPost[] @relation("kategori_postTopost")
+  komentar_post KomentarPost[] @relation("komentar_postTopost")
+
+  @@index([authorId], map: "Post_authorId_fkey")
+}
+
+model role {
+  id   Int    @id @default(autoincrement())
+  role String @db.VarChar(25)
+  user user[]
+}
+
+model user {
+  id             Int             @id @default(autoincrement())
+  email          String          @unique(map: "User_email_key")
+  name           String          @db.VarChar(50)
+  image_large    String          @default("user/default-large.jpg") @db.VarChar(100)
+  image_small    String          @default("user/default-small.jpg") @db.VarChar(100)
+  roleId         Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now())
+  role           role            @relation(fields: [roleId], references: [id], map: "User_roleId_fkey", onDelete: Cascade)
+  forum          forum[]
+  kategori       kategori[]
+  komentar_forum KomentarForum[] @relation("komentar_forumTouser")
+  komentar_post  KomentarPost[]  @relation("komentar_postTouser")
+  log            log[]
+  post           post[]
+
+  @@index([roleId], map: "User_roleId_fkey")
+}
