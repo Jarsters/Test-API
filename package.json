@@ -1,0 +1,27 @@
+{
+  "name": "family-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "prisma": "^4.5.0"
+  },
+  "dependencies": {
+    "@hapi/hapi": "^20.2.2",
+    "@hapi/inert": "^7.0.0",
+    "@prisma/client": "^4.5.0",
+    "nanoid": "^3.3.4",
+    "sharp": "^0.31.2"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  }
+}
