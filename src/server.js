@@ -7,7 +7,7 @@ BigInt.prototype.toJSON = function () {
 
 const init = async () => {
   const server = Hapi.server({
-    host: 'silly-moonbeam-f78e95.netlify.app',
+    host: '0.0.0.0',
     routes: {
       cors: {
         origin: ['*'],
